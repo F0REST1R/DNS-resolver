@@ -9,11 +9,11 @@ import (
 )
 
 type DNSRecord struct {
-	gorm.Model
+	ID        uint      `gorm:"primarykey"`
 	FQDN      string    `gorm:"not null;index"`
 	IP        string    `gorm:"not null;index"`
-	CreatedAt time.Time `gorm:"autoCreateTime"`
-	UpdateAt  time.Time `gorm:"autoUpdateTime"`
+	CreatedAt time.Time `gorm:"autoCreateTime;column:created_at"`
+	UpdatedAt  time.Time `gorm:"autoUpdateTime;column:updated_at"`
 }
 
 type DNSResolver struct {

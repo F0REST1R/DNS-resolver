@@ -7,7 +7,7 @@ import (
 )
 
 type AddFQDNRequest struct {
-	FQDN string `json:"fqdn" validate:"required,fqdn"`
+	FQDN string `json:"fqdn" validate:"required"`
 }
 
 func (h *Handler) AddFQDN(c echo.Context) error {

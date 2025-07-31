@@ -1,0 +1,83 @@
+openapi: 3.0.0
+info:
+  title: DNS Resolver API
+  version: 1.0.0
+  description: Сервис для сопоставления FQDN и IP-адресов с фоновым обновлением данных.
+
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер
+
+paths:
+  /api/fqdns:
+    post:
+      summary: Добавить FQDN 
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fqdn:
+                  type: string
+                  example: "github.com."
+              required:
+                - fqdn
+      responses:
+        '201':
+          description: FQDN успешно добавлен
+          content:
+            application/json:
+              example:
+                fqdn: "github.com."
+                ips: ["140.82.121.4"]
+        '400':
+          description: Неверный запрос
+        '503':
+          description: Ошибка DNS-резолвинга
+
+    get:
+      summary: Получить FQDN по IP
+      parameters:
+        - name: ip
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "140.82.121.4"
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              example:
+                ip: "140.82.121.4"
+                fqdns: ["github.com."]
+        '400':
+          description: Не указан параметр `ip`
+        '500':
+          description: Ошибка базы данных
+
+  /api/ips:
+    get:
+      summary: Получить IP по FQDN
+      parameters:
+        - name: fqdn
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "github.com."
+      responses:
+        '200':
+          description: Успешный ответ
+          content:
+            application/json:
+              example:
+                fqdn: "github.com."
+                ips: ["140.82.121.4"]
+        '400':
+          description: Не указан параметр `fqdn`
+        '500':
+          description: Ошибка базы данных

@@ -72,7 +72,7 @@ func TestAPIHandlers(t *testing.T) {
     
     e.ServeHTTP(rec, req)
     
-    assert.Equal(t, http.StatusMethodNotAllowed, rec.Code)
+    assert.Equal(t, http.StatusBadRequest, rec.Code)
 	})
 
 	t.Run("GetFQDNsByIP success", func(t *testing.T) {
