@@ -24,6 +24,9 @@ func TestDB(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("GetIPsByFQDN", func(t *testing.T) {
+		err := db.Exec("DELETE FROM dns_records").Error
+		require.NoError(t, err)
+
 		repo.AddOrUpdate(ctx, "example.com", "1.1.1.1")
 		repo.AddOrUpdate(ctx, "example.com", "1.1.2.2")
 
@@ -33,12 +36,17 @@ func TestDB(t *testing.T) {
 	})
 
 	t.Run("GetIPsByFQDN empty result", func(t *testing.T) {
+		err := db.Exec("DELETE FROM dns_records").Error
+		require.NoError(t, err)
+
 		ips, err := repo.GetIPsByFQDN(ctx, "nonexistent.com")
 		require.NoError(t, err)
 		assert.Empty(t, ips)
 	})
 
 	t.Run("GetFQDNsByIP", func(t *testing.T) {
+		err := db.Exec("DELETE FROM dns_records").Error
+		require.NoError(t, err)
 		// Подготовка данных
 		repo.AddOrUpdate(ctx, "site1.com", "3.3.3.3")
 		repo.AddOrUpdate(ctx, "site2.com", "3.3.3.3")
@@ -50,13 +58,19 @@ func TestDB(t *testing.T) {
 	})
 
 	t.Run("GetFQDNsByIP empty result", func(t *testing.T) {
+		err := db.Exec("DELETE FROM dns_records").Error
+		require.NoError(t, err)
+
 		fqdns, err := repo.GetFQDNsByIP(ctx, "0.0.0.0")
 		require.NoError(t, err)
 		assert.Empty(t, fqdns)
 	})
 
 	t.Run("AddOrUpdate creates new record", func(t *testing.T) {
-		err := repo.AddOrUpdate(ctx, "new.com", "5.5.5.5")
+		err := db.Exec("DELETE FROM dns_records").Error
+		require.NoError(t, err)
+
+		err = repo.AddOrUpdate(ctx, "new.com", "5.5.5.5")
 		require.NoError(t, err)
 
 		// Проверяем что запись действительно создалась
@@ -66,6 +80,8 @@ func TestDB(t *testing.T) {
 	})
 
 	t.Run("AddOrUpdate updates existing record", func(t *testing.T) {
+		err := db.Exec("DELETE FROM dns_records").Error
+		require.NoError(t, err)
 		// Сначала создаем запись
 		require.NoError(t, repo.AddOrUpdate(ctx, "exist.com", "6.6.6.6"))
 
@@ -80,5 +96,16 @@ func TestDB(t *testing.T) {
 		var updated models.DNSRecord
 		db.Where("fqdn = ? AND ip = ?", "exist.com", "6.5.5.6").First(&updated)
 		assert.True(t, updated.UpdatedAt.After(original.UpdatedAt))
+	})
+
+	t.Run("GetAllFQDNs", func(t *testing.T) {
+		err := db.Exec("DELETE FROM dns_records").Error
+		require.NoError(t, err)
+		repo.AddOrUpdate(ctx, "site1.com", "3.3.3.3")
+		repo.AddOrUpdate(ctx, "site2.com", "3.2.2.3")
+
+		fqdns, err := repo.GetAllFQDNs(ctx)
+		require.NoError(t, err)
+		assert.ElementsMatch(t, []string{"site1.com", "site2.com"}, fqdns)
 	})
 }

@@ -17,6 +17,13 @@ func NewDB(db *gorm.DB) *DB{
 	return &DB{db: db}
 }
 
+type Repository interface {
+	AddOrUpdate(ctx context.Context, fqdn, ip string) error
+	GetIPsByFQDN(ctx context.Context, fqdn string) ([]string, error)
+	GetFQDNsByIP(ctx context.Context, ip string) ([]string, error)
+	GetAllFQDNs(ctx context.Context) ([]string, error)
+}
+
 func NewPostgresDB(host, port, user, password, dbname string) (*gorm.DB, error) {
 	dsn := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", 
@@ -66,3 +73,12 @@ func (d *DB) AddOrUpdate(ctx context.Context, fqdn, ip string) error {
 	return d.db.WithContext(ctx).Where(models.DNSRecord{FQDN: fqdn, IP: ip}).FirstOrCreate(&models.DNSRecord{FQDN: fqdn, IP: ip}).Error
 }
 
+func (d *DB) GetAllFQDNs(ctx context.Context) ([]string, error) {
+	var fqdns []string
+	err := d.db.WithContext(ctx).Model(&models.DNSRecord{}).Distinct("fqdn").Pluck("fqdn", &fqdns).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to get FQDNs: %w", err)
+	}
+
+	return fqdns, nil
+}
