@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"dns-resolver/internal/api"
-	"dns-resolver/internal/config"
 	dnsresolver "dns-resolver/internal/dns_resolver"
 	"dns-resolver/internal/repository"
+	v "dns-resolver/internal/validator"
 	"log"
 	"net/http"
 	"os"
@@ -13,7 +13,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -21,7 +20,7 @@ import (
 func main() {
 	logger := log.New(os.Stdout, "DNS_RESOLVER: ", log.LstdFlags|log.Lshortfile)
 
-	db, err := config.ProdDB()
+	db, err := repository.ProdDB()
 	if err != nil {
 		logger.Fatalf("failed to connect DB: %v", err)
 	}
@@ -40,8 +39,7 @@ func main() {
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
 
-	validate := validator.New()
-	e.Validator = &CustomValidator{validator: validate}
+	e.Validator = v.New()
 
 	api.NewHandler(resolver).RegisterRoutes(e)
 
@@ -72,10 +70,3 @@ func main() {
 	logger.Println("Server gracefully stopped")
 }
 
-type CustomValidator struct {
-	validator *validator.Validate
-}
-
-func (cv *CustomValidator) Validate(i interface{}) error {
-	return cv.validator.Struct(i)
-}

@@ -2,8 +2,8 @@ package api
 
 import (
 	"context"
-	"dns-resolver/internal/config"
 	dnsresolver "dns-resolver/internal/dns_resolver"
+	v "dns-resolver/internal/validator"
 	"dns-resolver/internal/models"
 	"dns-resolver/internal/repository"
 	"encoding/json"
@@ -24,7 +24,6 @@ type MockResolver struct {
 }
 
 func (m *MockResolver) Resolve(ctx context.Context, fqdn string) ([]string, error) {
-	// Возвращаем фиксированные IP для тестовых доменов
 	switch fqdn {
 	case "github.com.":
 		return []string{"140.82.121.4"}, nil
@@ -49,7 +48,7 @@ func (m *MockResolver) DNSUpdater(ctx context.Context, interval time.Duration) {
 }
 
 func setupTestDB(t *testing.T) *repository.DB {
-	db, err := config.TestDBcon()
+	db, err := repository.DBForTest()
 	require.NoError(t, err)
 
 	// Очищаем и мигрируем тестовую БД
@@ -68,7 +67,7 @@ func TestAPIWithRealDB(t *testing.T) {
 	h := NewHandler(resolver)
 
 	e := echo.New()
-	e.Validator = &Validator{validator: NewValidator()}
+	e.Validator = v.New()
 	h.RegisterRoutes(e)
 
 	ctx := context.Background()

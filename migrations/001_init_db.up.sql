@@ -9,3 +9,4 @@ CREATE TABLE IF NOT EXISTS dns_records (
 
 CREATE INDEX IF NOT EXISTS idx_dns_records_fqdn ON dns_records(fqdn);
 CREATE INDEX IF NOT EXISTS idx_dns_records_ip ON dns_records(ip);
+

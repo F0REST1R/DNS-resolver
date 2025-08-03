@@ -3,12 +3,12 @@ package api
 import (
 	"context"
 	dnsresolver "dns-resolver/internal/dns_resolver"
-	"dns-resolver/internal/repository"
+	v "dns-resolver/internal/validator"
+	"dns-resolver/internal/models"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"github.com/go-playground/validator/v10"
 
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -17,7 +17,7 @@ import (
 
 // MockRepository заменяет реальный репозиторий
 type MockRepository struct {
-	repository.Repository 
+	models.Repository 
 }
 
 func (m *MockRepository) AddOrUpdate(ctx context.Context, fqdn, ip string) error {
@@ -39,15 +39,15 @@ func (m *MockRepository) GetIPsByFQDN(ctx context.Context, fqdn string) ([]strin
 }
 
 func TestAPIHandlers(t *testing.T) {
-	// 1. Создаем мок репозитория
+	//Создаем мок репозитория
 	mockRepo := &MockRepository{}
 
-	// 2. Инициализируем реальный Resolver с моком репозитория
+	//Инициализируем реальный Resolver с моком репозитория
 	resolver := dnsresolver.NewResolver(mockRepo)
 
-	// 3. Создаем обработчики API
+	//Создаем обработчики API
 	e := echo.New()
-	e.Validator = &Validator{validator: NewValidator()}
+	e.Validator = v.New()
 
 	h := NewHandler(resolver)
 	h.RegisterRoutes(e)
@@ -101,15 +101,3 @@ func TestAPIHandlers(t *testing.T) {
 	})
 }
 
-//Этот валидатор лишь для теста
-func NewValidator() *validator.Validate {
-	return validator.New()
-}
-
-type Validator struct{
-	validator *validator.Validate
-}
-
-func (v *Validator) Validate(i interface{}) error {
-	return v.validator.Struct(i)
-}

@@ -1,19 +1,20 @@
 services:
   postgres:
-    image: postgres:15
-    container_name: postgresql
-    environment:
+    image: postgres:15 
+    container_name: postgresql 
+    environment: 
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: dbdns
       POSTGRES_DB: DNS_DB
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./migrations:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data 
+      - ./migrations:/docker-entrypoint-initdb.d 
     healthcheck:  
       test: ["CMD-SHELL", "pg_isready -U postgres -d DNS_DB"]
       interval: 5s
       timeout: 5s
       retries: 5
+
   
   app:
     build: 
@@ -21,18 +22,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: dbdns
-      POSTGRES_DB: DNS_DB
-      DB_HOST: postgres
-      DB_PORT: 5432
     depends_on:
       postgres:
         condition: service_healthy
     volumes:
      - .:/app
-    restart: unless-stopped
+    restart: unless-stopped 
     healthcheck:  
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s

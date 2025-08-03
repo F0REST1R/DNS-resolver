@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"dns-resolver/internal/config"
 	"dns-resolver/internal/models"
 	"testing"
 
@@ -11,17 +10,17 @@ import (
 )
 
 func TestDB(t *testing.T) {
-	db, err := config.TestDBcon()
+	db, err := DBForTest()
 	require.NoError(t, err)
 
-	err = db.Exec("DROP TABLE IF EXISTS dns_records").Error
+	err = db.Exec("DROP TABLE IF EXISTS dns_records").Error 
 	require.NoError(t, err)
 
 	err = db.AutoMigrate(&models.DNSRecord{})
 	require.NoError(t, err, "Failed to migrate test database")
 
-	repo := NewDB(db)
-	ctx := context.Background()
+	repo := NewDB(db) //
+	ctx := context.Background() 
 
 	t.Run("GetIPsByFQDN", func(t *testing.T) {
 		err := db.Exec("DELETE FROM dns_records").Error

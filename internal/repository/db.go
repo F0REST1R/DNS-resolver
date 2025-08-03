@@ -17,25 +17,14 @@ func NewDB(db *gorm.DB) *DB{
 	return &DB{db: db}
 }
 
-type Repository interface {
-	AddOrUpdate(ctx context.Context, fqdn, ip string) error
-	GetIPsByFQDN(ctx context.Context, fqdn string) ([]string, error)
-	GetFQDNsByIP(ctx context.Context, ip string) ([]string, error)
-	GetAllFQDNs(ctx context.Context) ([]string, error)
+func ProdDB() (*gorm.DB, error) {
+	dsn := "host=postgres user=postgres password=dbdns dbname=DNS_DB port=5432 sslmode=require sslmode=disable"
+    return gorm.Open(postgres.Open(dsn), &gorm.Config{})
 }
 
-func NewPostgresDB(host, port, user, password, dbname string) (*gorm.DB, error) {
-	dsn := fmt.Sprintf(
-		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable", 
-		host, user, password, dbname, port, 
-	)
-
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to db: %w", err)
-	}
-
-	return db, nil
+func DBForTest() (*gorm.DB, error) {
+	dsn := "host=localhost user=postgres password=dbdns dbname=DNS_DB port=5432 sslmode=require sslmode=disable"
+    return gorm.Open(postgres.Open(dsn), &gorm.Config{})
 }
 
 func (d *DB) GetFQDNsByIP(ctx context.Context, ip string) ([]string, error) {
