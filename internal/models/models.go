@@ -2,10 +2,8 @@ package models
 
 import (
 	"context"
-	"net"
 	"time"
 
-	"gorm.io/gorm"
 )
 
 type DNSRecord struct {
@@ -14,12 +12,6 @@ type DNSRecord struct {
 	IP        string    `gorm:"not null;index"`
 	CreatedAt time.Time `gorm:"autoCreateTime;column:created_at"`
 	UpdatedAt  time.Time `gorm:"autoUpdateTime;column:updated_at"`
-}
-
-type DNSResolver struct {
-	DB             *gorm.DB
-	Resolver       *net.Resolver
-	UpdateInterval time.Duration
 }
 
 type Repository interface {
